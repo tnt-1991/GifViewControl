@@ -6,7 +6,8 @@
         xmlns:local="clr-namespace:GifViewControlApp"
         mc:Ignorable="d"
         Title="MainWindow" Height="350" Width="525">
-    <Grid>
-        <local:GifViewControl GifSourceLink="Images/giphy.gif" Stretch="Fill" SpeedRatio="1" FrameIndex="0" AutoStart="True" />
+    <Grid Name="main">
+        <!-- Declaration in XAML example -->
+        <!--<local:GifViewControl GifSourceLink="Images/giphy.gif" Stretch="Fill" SpeedRatio="1" FrameIndex="0" AutoStart="True" />-->
     </Grid>
 </Window>

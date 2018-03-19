@@ -1,22 +1,11 @@
 ﻿using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
 using System.Windows;
 using System.Windows.Controls;
 using System.Windows.Data;
-using System.Windows.Documents;
-using System.Windows.Input;
 using System.Windows.Media;
 using System.Windows.Media.Animation;
 using System.Windows.Media.Imaging;
-using System.Windows.Navigation;
-using System.Windows.Shapes;
-using System.Windows.Threading;
 using System.IO;
-using System.Globalization;
-using System.ComponentModel;
 
 namespace GifViewControlApp
 {
@@ -55,9 +44,9 @@ namespace GifViewControlApp
             set { base.SetValue(GifSourceLinkProperty, value); }
         }
 
-        public BitmapImage GifSource
+        public Stream GifSource
         {
-            get { return (BitmapImage)base.GetValue(GifSourceProperty); }
+            get { return (Stream)base.GetValue(GifSourceProperty); }
             set { base.SetValue(GifSourceProperty, value); }
         }
 
@@ -123,15 +112,16 @@ namespace GifViewControlApp
         }
 
         public static readonly DependencyProperty GifSourceProperty =
-            WpfUtils.RegisterDependencyPropertyWithCallback<GifViewControl, BitmapImage>("GifSource", new BitmapImage(new Uri("Images/default.gif", UriKind.Relative)), x => x.GifSourcePropertyChanged);
+            WpfUtils.RegisterDependencyPropertyWithCallback<GifViewControl, Stream>("GifSource", null, x => x.GifSourcePropertyChanged);
 
-        private void GifSourcePropertyChanged(BitmapImage oldValue, BitmapImage newValue)
+        private void GifSourcePropertyChanged(Stream oldValue, Stream newValue)
         {
+            _isInitialized = false;
             this.Initialize();
         }
 
         public static readonly DependencyProperty GifSourceLinkProperty =
-            WpfUtils.RegisterDependencyPropertyWithCallback<GifViewControl, string>("GifSourceLink", string.Empty, x => x.GifSourceLinkPropertyChanged);
+            WpfUtils.RegisterDependencyPropertyWithCallback<GifViewControl, string>("GifSourceLink", "Images/default.gif", x => x.GifSourceLinkPropertyChanged);
 
         private void GifSourceLinkPropertyChanged(string oldValue, string newValue)
         {
@@ -172,8 +162,7 @@ namespace GifViewControlApp
         {
             if (!_isInitialized)
             {
-                Uri uri = GetUri();
-                _gifDecoder = new GifBitmapDecoder(uri, BitmapCreateOptions.PreservePixelFormat, BitmapCacheOption.Default);
+                SetGifDecoderSource();
 
                 _animation = new Int32Animation(0, _gifDecoder.Frames.Count - 1, new Duration(TimeSpan.FromSeconds(_gifDecoder.Frames.Count / 10.0)));
                 _animation.SpeedRatio = SpeedRatio;
@@ -187,24 +176,22 @@ namespace GifViewControlApp
         }
 
         /// <summary>
-        /// As Uri will be used:
-        ///  - GifSourceLink (string) if defined
-        ///  - GifSource (BitmapImage) if defined, GifSourceLink is not defined
-        ///  - default.gif if GifSource and GifSourceLink are not defined
+        /// As GifDecoderSource will be used:
+        /// - GifSource (BitmapImage) if defined
+        /// - GifSourceLink (string) if defined
+        /// - default.gif if GifSource and GifSourceLink are not defined
         /// </summary>
-        private Uri GetUri()
+        private void SetGifDecoderSource()
         {
-            Uri uri;
-            if (!String.IsNullOrEmpty(GifSourceLink))
+            if (GifSource != null)
             {
-                uri = new Uri(GifSourceLink, UriKind.Relative);
+                _gifDecoder = new GifBitmapDecoder(GifSource, BitmapCreateOptions.PreservePixelFormat, BitmapCacheOption.Default);
             }
             else
             {
-                uri = GifSource.UriSource;
+                Uri uri = new Uri(GifSourceLink, UriKind.Relative);
+                _gifDecoder = new GifBitmapDecoder(uri, BitmapCreateOptions.PreservePixelFormat, BitmapCacheOption.Default);
             }
-
-            return uri;
         }
 
         private void CreateImageControl()
