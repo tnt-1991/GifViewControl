@@ -67,6 +67,7 @@
       <DependentUpon>App.xaml</DependentUpon>
       <SubType>Code</SubType>
     </Compile>
+    <Compile Include="GifViewControl.cs" />
     <Compile Include="GifViewControl.xaml.cs">
       <DependentUpon>GifViewControl.xaml</DependentUpon>
     </Compile>
